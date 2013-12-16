@@ -26,7 +26,7 @@ NSString *kCellID = @"CellID";                          // UICollectionViewCell 
 NSString * kHeaderID = @"Header";
 @interface ViewController ()<UICollectionViewDataSource,UICollectionViewDelegate>
 @property (nonatomic,strong) IBOutlet UICollectionView * collectionView;
-
+@property (nonatomic,strong) NSMutableArray * cellImagesPath;
 @end
 
 @implementation ViewController
@@ -36,10 +36,19 @@ NSString * kHeaderID = @"Header";
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     self.homeViewData = [[HomeViewData alloc]init];
+    self.cellImagesPath = [NSMutableArray array];
     //获取数据
     [self reloadCaches];
 }
 
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - Private Methods
 -(void)reloadCaches{
     //在首页界面加载完成后，调用后台访问的代码
     //最好使用多线程，新开一个线程访问
@@ -60,6 +69,7 @@ NSString * kHeaderID = @"Header";
 {
     NSLog(@"------运行到这里，说明正在网络请求后台的 List.xml --------");
     //添加网络状态判断
+#warning 网络检测有改动
     if ([GSReachability checkIfOnline]) {
         //网络正常链接
         //1 得到List.xml的路径
@@ -83,13 +93,6 @@ NSString * kHeaderID = @"Header";
 }
 
 
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
 #pragma mark - CollectionViewDataSource
 -(UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath{
     
@@ -104,15 +107,20 @@ NSString * kHeaderID = @"Header";
 -(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     
     Cell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:kCellID forIndexPath:indexPath];
-
-    cell.imageView.image = [UIImage imageWithContentsOfFile:[homeViewData.PeriodicalThumb objectAtIndex:indexPath.row]];
+    
+    NSString * key = [homeViewData.Section objectAtIndex:indexPath.section];
+    NSInteger index = indexPath.row;
+    
+    NSString * imagePath = [[homeViewData.PeriodicalFrontCover objectForKey:key] objectAtIndex:index];
+    cell.imageView.image = [UIImage imageWithContentsOfFile:imagePath];
     [cell.imageView.layer setShadowColor:[UIColor whiteColor].CGColor];
     [cell.imageView.layer setShadowOffset:CGSizeMake(2, 2)];
     [cell.imageView.layer setShadowOpacity:0.5f];
     
     // make the cell's title the actual NSIndexPath value
 //    cell.Label.text =[NSString stringWithFormat:@"{%ld,%ld}", (long)indexPath.row, (long)indexPath.section];
-    NSString * str =[homeViewData.Title objectAtIndex:indexPath.row];
+//    NSString * str =[homeViewData.Title objectAtIndex:indexPath.row];
+    NSString * str = [[homeViewData.Title objectForKey:key] objectAtIndex:indexPath.row];
     cell.Label.text = str;
 
     return cell;
@@ -130,24 +138,26 @@ NSString * kHeaderID = @"Header";
     return homeViewData.Section.count;
 }
 
+#pragma mark - StoryboardSegue Methods
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([[segue identifier] isEqualToString:@"pushToDetail"])
     {
-//        NSIndexPath *selectedIndexPath = [[self.collectionView indexPathsForSelectedItems] objectAtIndex:0];
+        NSIndexPath *selectedIndexPath = [[self.collectionView indexPathsForSelectedItems] objectAtIndex:0];
 
         // load the image, to prevent it from being cached we use 'initWithContentsOfFile'
 //       DetailViewController * detailViewController = [[UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]]instantiateViewControllerWithIdentifier:kDetailedViewControllerID];
 //        detailViewController = [segue destinationViewController];
         
         DetailViewController *detailViewController = [segue destinationViewController];
-        detailViewController.image = [UIImage imageNamed:@"png5.png"];
+        NSArray * arr =[self.homeViewData.TopicXMLPaths
+                        objectForKey:[homeViewData.Section objectAtIndex:selectedIndexPath.section]];
+        detailViewController.xmlPath = [arr objectAtIndex:selectedIndexPath.row];
     }else if([[segue identifier] isEqualToString:@"pushToFavourite"]){
         FavouriteViewController *favouriteViewController = [segue destinationViewController];
     }
     
 }
-
 
 
 @end

@@ -8,7 +8,7 @@
 
 #import "FavouriteViewController.h"
 #import "FavouriteCell.h"
-@interface FavouriteViewController ()
+@interface FavouriteViewController ()<UICollectionViewDelegate,UICollectionViewDataSource>
 
 @end
 
@@ -47,6 +47,9 @@
     FavouriteCell * cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Favourite" forIndexPath:indexPath];
     cell.imageView.image = [UIImage imageNamed:@"png5.png"];
     return cell;
+}
+-(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 @end

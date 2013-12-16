@@ -8,12 +8,16 @@
 
 #import "DetailViewController.h"
 #import "ThumbViewController.h"
-#import "HMSideMenu.h"
+#import "DetailViewData.h"
+#import "MagazineMap.h"
+#import "UIView+SubviewTraversal.h"
+#import "DetailCollectionCell.h"
 
-@interface DetailViewController ()
-@property (nonatomic,strong)IBOutlet UIImageView * imageView;
+@interface DetailViewController ()<UICollectionViewDataSource,UICollectionViewDelegate>
+
 @property (strong, nonatomic) IBOutlet UIToolbar *Toolbar;
-
+@property (nonatomic,strong) DetailViewData * detailViewData;
+@property (nonatomic,strong) NSMutableArray * thumbImagePaths;
 - (IBAction)TapGesture:(id)sender;
 @end
 
@@ -23,8 +27,9 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // Custom initialization
-       
+        // Custom initialization        
+        _thumbImagePaths = [NSMutableArray array];
+        
     }
     return self;
 }
@@ -33,9 +38,21 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
-     self.imageView.image = self.image;
+    self.detailViewData = [[DetailViewData alloc]init];
+    
 }
 
+-(void)viewWillAppear:(BOOL)animated{
+    dispatch_async(dispatch_queue_create("backgroundqueue", NULL), ^{
+        [[MagazineMap sharedInstance]getMagazineMapFromXmlSource:_xmlPath];
+        [self.detailViewData getDetailViewData];
+        [self.collectionView reloadData];
+    });
+}
+
+-(void)viewDidLayoutSubviews{
+//    [self.view.window printSubviews];
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -60,22 +77,50 @@
     
 }
 - (IBAction)TapGesture:(id)sender {
-    CATransition *trans=[CATransition animation];
-    trans.type=kCATransitionPush;
-    trans.duration=0.2f;
+    
+    NSLog(@"tap");
+//    CATransition *trans=[CATransition animation];
+//    trans.type=kCATransitionPush;
+//    trans.duration=0.2f;
     
     if (self.navigationController.navigationBarHidden) {
         [self.navigationController setNavigationBarHidden:NO animated:YES];
-        trans.subtype=kCATransitionFromTop;
-       [self.Toolbar.layer addAnimation:trans forKey:@"transition"];
-        [self.Toolbar setHidden:NO];
+//        trans.subtype=kCATransitionFromTop;
+//       [self.Toolbar.layer addAnimation:trans forKey:@"transition"];
+//        [self.Toolbar setHidden:NO];
     }else if (!self.navigationController.navigationBarHidden){
         [self.navigationController setNavigationBarHidden:YES animated:YES];
-        trans.subtype=kCATransitionFromBottom;
-        [self.Toolbar.layer addAnimation:trans forKey:@"transition"];
-        [self.Toolbar setHidden:YES];
+//        trans.subtype=kCATransitionFromBottom;
+//        [self.Toolbar.layer addAnimation:trans forKey:@"transition"];
+//        [self.Toolbar setHidden:YES];
     }
 }
+
+#pragma mark - CollectionViewDataSource
+//-(UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:{
+//    
+//}
+
+-(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
+    
+    DetailCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"detailCell" forIndexPath:indexPath];
+    NSString * imgPath = [self.detailViewData.imagesArray objectAtIndex:indexPath.row];
+    UIImage * img = [UIImage imageWithContentsOfFile:imgPath];
+    cell.imageView.image = img;
+
+    return cell;
+}
+
+-(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
+    return self.detailViewData.imagesArray.count;
+}
+
+
+
+-(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
+    return 1;
+}
+
 
 
 @end

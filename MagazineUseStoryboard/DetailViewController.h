@@ -9,7 +9,8 @@
 #import <UIKit/UIKit.h>
 
 @interface DetailViewController : UIViewController
-@property (nonatomic,weak)UIImage * image;
+@property (nonatomic,strong) NSString * xmlPath;
+@property (strong, nonatomic) IBOutlet UICollectionView *collectionView;
 
 - (IBAction)ZanBtnPressed:(UIBarButtonItem *)sender;
 - (IBAction)CommentBtnPressed:(id)sender;

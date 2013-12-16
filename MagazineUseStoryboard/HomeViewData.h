@@ -14,9 +14,10 @@
 
 @property (nonatomic,strong,readonly)NSMutableArray * Section;
 @property (nonatomic,strong,readonly)NSMutableArray * HeaderTitle;
-@property (nonatomic,strong,readonly)NSMutableArray * PeriodicalThumb;
+@property (nonatomic,strong,readonly)NSMutableDictionary * PeriodicalFrontCover;
 @property (nonatomic,strong,readonly)NSMutableDictionary * dictData;
-@property (nonatomic,strong,readonly)NSMutableArray * Title;
+@property (nonatomic,strong,readonly)NSMutableDictionary * Title;
+@property (nonatomic,strong,readonly)NSMutableDictionary * TopicXMLPaths;
 
 -(void)getHomeViewDataSource;
 

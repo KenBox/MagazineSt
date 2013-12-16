@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface FavouriteViewController : UICollectionViewController
+@interface FavouriteViewController : UIViewController
 
 @end

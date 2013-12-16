@@ -7,7 +7,7 @@
 //
 
 #import "MagazineMap.h"
-//#import "ContentData.h"
+#import "ContentData.h"
 #import "GDataXMLNode.h"
 #import "MyHeader.h"
 @implementation MagazineMap
@@ -25,7 +25,7 @@
     return shared;
 }
 
-/*
+
 -(void)getMagazineMapFromXmlSource:(NSString *)xmlPath{
     NSLog(@"后台解析MagazineMap数据");
     if (!self.TopicArray) {
@@ -124,7 +124,7 @@
     [self.TopicArray addObject:conData];
    
 }
-*/
+
 
 
 

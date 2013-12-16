@@ -12,15 +12,16 @@
 #import "MyHeader.h"
 #import "FileOperation.h"
 @implementation HomeViewData
-@synthesize Section,PeriodicalThumb,Title,dictData,HeaderTitle;
+@synthesize Section,PeriodicalFrontCover,Title,dictData,HeaderTitle,TopicXMLPaths;
 
 -(id)init{
     if (self = [super init]) {
         Section = [NSMutableArray array];
-        PeriodicalThumb = [NSMutableArray array];
-        Title = [NSMutableArray array];
+        PeriodicalFrontCover = [NSMutableDictionary dictionary];
+        Title = [NSMutableDictionary dictionary];
         dictData = [NSMutableDictionary dictionary];
         HeaderTitle = [NSMutableArray array];
+        TopicXMLPaths = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -37,20 +38,36 @@
     [self sortMonthData];
     //下载封面图及内容页xml
     for (int i = 0 ; i<Section.count; i++) {
+        NSMutableArray * imagesPath = [NSMutableArray array];
+        NSMutableArray * xmlPathArray = [NSMutableArray array];
+        NSMutableArray * titleArray = [NSMutableArray array];
+        [imagesPath removeAllObjects];
+        [xmlPathArray removeAllObjects];
+        [titleArray removeAllObjects];
         for (int j = 0; j< [[dictData objectForKey:[Section objectAtIndex:i]] count]; j++) {
             PeriodicalData * pData = [[dictData objectForKey:[Section objectAtIndex:i]] objectAtIndex:j];
             NSString * DownloadDir = [NSString stringWithFormat:@"%@/%@",kCachesFolderPath,pData.FolderName];
             //创建文件夹路径
             [[NSFileManager defaultManager] createDirectoryAtPath:DownloadDir withIntermediateDirectories:YES attributes:nil error:nil];
-            [Title addObject:pData.LabelTitle];
+            [titleArray addObject:pData.LabelTitle];
             NSString * str = [NSString stringWithFormat:@"%@/%@/%@",kCachesFolderPath,pData.FolderName,pData.FrontCoverName];
-            [PeriodicalThumb addObject:str];
-            if (![FileOperation fileExistsAtPath:[PeriodicalThumb objectAtIndex:j]]) {
-                [pData downloadFileFrom:pData.FrontCoverURL intoPath:[PeriodicalThumb objectAtIndex:j]];
-                [pData downloadFileFrom:pData.TopicXMLURL intoPath:[NSString stringWithFormat:@"%@/%@/%@.xml",kCachesFolderPath,pData.FolderName,pData.FolderName]];
+            NSString * xmlPath = [NSString stringWithFormat:@"%@/%@/%@.xml",kCachesFolderPath,pData.FolderName,pData.FolderName];
+            [imagesPath addObject:str];
+            [xmlPathArray addObject:xmlPath];
+            if (![FileOperation fileExistsAtPath:str]) {
+                [pData downloadFileFrom:pData.FrontCoverURL
+                               intoPath:str];
+            }
+            if (![FileOperation fileExistsAtPath:xmlPath]) {
+                [pData downloadFileFrom:pData.TopicXMLURL
+                               intoPath:xmlPath];
             }
         }
+        [self.PeriodicalFrontCover setObject:imagesPath forKey:[Section objectAtIndex:i]];
+        [self.TopicXMLPaths setObject:xmlPathArray forKey:[Section objectAtIndex:i]];
+        [self.Title setObject:titleArray forKey:[Section objectAtIndex:i]];
     }
+    
 }
 
 
@@ -58,15 +75,17 @@
 -(void)clearData{
     if (dictData) {
         [Section removeAllObjects];
-        [PeriodicalThumb removeAllObjects];
+        [PeriodicalFrontCover removeAllObjects];
         [Title removeAllObjects];
         [dictData removeAllObjects];
         [HeaderTitle removeAllObjects];
+        [TopicXMLPaths removeAllObjects];
     }
     
 }
 
 -(void)sortMonthData{
+    
     for (int i = 0; i<Section.count; i++) {
         NSString * key = [Section objectAtIndex:i];
         NSArray * arr =[dictData objectForKey:key];
